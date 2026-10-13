@@ -1,4 +1,4 @@
-const CACHE_NAME = 'halfstone-cache-v3';
+const CACHE_NAME = 'halfstone-cache-v6';
 
 // All files the app needs to run offline (relative paths so the app
 // also works when served from a subdirectory).

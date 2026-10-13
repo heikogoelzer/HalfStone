@@ -20,9 +20,65 @@ let backgroundVisible;
 let invertGrayToSize;
 let grayMin;
 let grayMax;
+let iconImgs = [];
+let lblBank;
+let selBank;
+let pendingIcons = 0;
+
+// Icon banks: each is a directory `<bank>/png/` whose `index.json`
+// lists every `<name>_g<NNN>.png` in it (NNN = black-pixel coverage
+// %). Add a bank by creating the directory + manifest and listing it
+// in BANKS.
+const BANKS = ['dots', 'squares', 'animals'];
 
 function preload() {
   img_org = loadImage('Lou24.png');
+  selectBank('dots');
+}
+
+// p5's loadJSON fills its return value asynchronously, so it cannot
+// be iterated inside preload(); read the manifest synchronously.
+// loadImage() issued here or from the bank menu registers with p5;
+// recolor+redraw once the whole bank is on screen.
+function selectBank(bank) {
+  let req = new XMLHttpRequest();
+  req.open('GET', bank + '/png/index.json', false);
+  req.send(null);
+  let names = JSON.parse(req.responseText);
+  pendingIcons = names.length;
+  iconImgs = names.map((name) => ({
+    img: loadImage(bank + '/png/' + name, bankLoaded),
+    g: parseInt(name.match(/_g(\d+)\.png$/)[1], 10) / 100,
+    colored: null,
+  }));
+}
+
+function bankLoaded() {
+  pendingIcons--;
+  if (pendingIcons > 0) return;
+  if (circleColor) {
+    recolorIcons();
+    redraw();
+  }
+}
+
+// Icons are black glyphs on transparency, so tint() cannot recolor
+// them; rewrite RGB per pixel and keep the original alpha.
+function recolorIcons() {
+  for (let ic of iconImgs) {
+    let out = ic.img.get();
+    out.loadPixels();
+    let r = red(circleColor);
+    let g = green(circleColor);
+    let b = blue(circleColor);
+    for (let i = 0; i < out.pixels.length; i += 4) {
+      out.pixels[i] = r;
+      out.pixels[i + 1] = g;
+      out.pixels[i + 2] = b;
+    }
+    out.updatePixels();
+    ic.colored = out;
+  }
 }
 
 function computeGrayRange() {
@@ -49,6 +105,7 @@ function setup() {
     img_org.loadPixels();
     computeGrayRange();
   }
+  recolorIcons();
   makeGUI();
   noLoop();
   redraw();
@@ -69,6 +126,16 @@ function makeGUI() {
   fileLabel = createSpan('Lou24.png');
   fileLabel.class('ui-file-name');
   fileLabel.parent(fileWrap);
+
+  lblBank = createP('Icons');
+  lblBank.class('ui-label');
+  lblBank.parent(controls);
+  selBank = createSelect();
+  selBank.class('ui-select');
+  selBank.parent(controls);
+  for (let bank of BANKS) selBank.option(bank);
+  selBank.selected('dots');
+  selBank.changed(() => selectBank(selBank.value()));
 
   lblSpacing = createP('Spacing');
   lblSpacing.class('ui-label');
@@ -113,6 +180,7 @@ function makeGUI() {
   circleColorPicker.class('ui-color');
   circleColorPicker.input(() => {
     circleColor = color(circleColorPicker.color());
+    recolorIcons();
     redraw();
   });
 
@@ -157,7 +225,6 @@ function draw() {
   ctx.rect(x, y, w, h);
   ctx.clip();
   noStroke();
-  fill(circleColor);
 
   for (let py = y + spacing / 2; py < y + h; py += spacing) {
     let iy = floor((py - y) / imgScale);
@@ -170,7 +237,29 @@ function draw() {
       let range = grayMax - grayMin;
       let grayRatio = range > 0 ? (gray - grayMin) / range : 0.5;
       let radius = maxRadius * (invertGrayToSize ? grayRatio : 1 - grayRatio);
-      if (radius > 0.25) circle(px, py, radius * 2);
+      // Target black fraction of the cell: a full-radius circle
+      // (50% of spacing) covers PI/4 of it.
+      let target = PI * radius * radius / (spacing * spacing);
+      if (target <= 0) continue;
+      // Icon and rotation come from a hash of the cell's pixel
+      // coordinates, so they stay fixed as Radius % changes (a
+      // sequential random stream would shift whenever cells drop
+      // in/out of the draw set). Spacing moves cells to new
+      // coordinates, so it legitimately reshuffles.
+      let h = Math.imul(ix + 1, 0x9e3779b1) ^
+        Math.imul(iy + 1, 0x85ebca77);
+      h = Math.imul(h ^ (h >>> 13), 0xc2b2ae3d) ^ (h >>> 16);
+      // Random-looking icon, scaled so its black area matches target.
+      let best = iconImgs[(h >>> 0) % iconImgs.length];
+      // Coverage g scales with drawn area, so linear size grows by
+      // sqrt(target / g): lower-coverage icons are enlarged.
+      let size = spacing * sqrt(target / best.g);
+      if (size < 1) continue;
+      push();
+      translate(px, py);
+      rotate(PI / 4 * ((h >>> 8) % 8));
+      image(best.colored, -size / 2, -size / 2, size, size);
+      pop();
     }
   }
   ctx.restore();

@@ -16,7 +16,8 @@ body {
 
 /* form controls don't inherit font-family by default */
 .ui-panel input,
-.ui-panel button {
+.ui-panel button,
+.ui-panel select {
 	font-family: inherit;
 }
 
@@ -72,6 +73,11 @@ body {
 .ui-checkbox input {
 	width: clamp(14px, 2vw, 18px);
 	height: clamp(14px, 2vw, 18px);
+}
+
+.ui-select {
+	font-size: clamp(14px, 3.5vw, 22px);
+	padding: clamp(4px, 1vw, 8px);
 }
 
 .ui-button {
