@@ -1,0 +1,89 @@
+html,
+body {
+	margin: 0;
+	padding: 0;
+	font-family: system-ui, sans-serif;
+	/* p5 sizes canvas to windowWidth which can include the scrollbar
+	   area; prevent scrollbars from that 15px overflow */
+	overflow: hidden;
+}
+
+.ui-panel {
+	padding: 10px;
+	background: rgb(255 255 255 / 85%);
+	font-family: system-ui, sans-serif;
+}
+
+/* form controls don't inherit font-family by default */
+.ui-panel input,
+.ui-panel button {
+	font-family: inherit;
+}
+
+/* Control sizes scale with screen width (vw units, clamped) */
+
+.ui-file {
+	display: flex;
+	align-items: center;
+	gap: 6px;
+}
+
+/* hide the native widget; opened via the Choose image button */
+.ui-file input {
+	position: absolute;
+	width: 1px;
+	height: 1px;
+	opacity: 0;
+}
+
+.ui-file-name {
+	color: #777;
+	white-space: nowrap;
+}
+
+.ui-label {
+	font-size: clamp(14px, 3.5vw, 22px);
+	margin: 0;
+	margin-top: 8px;
+}
+
+.ui-slider {
+	width: clamp(120px, 40vw, 320px);
+}
+
+.ui-slider::-webkit-slider-thumb {
+	width: clamp(22px, 4.5vw, 34px);
+	height: clamp(22px, 4.5vw, 34px);
+	-webkit-appearance: none;
+	appearance: none;
+}
+
+.ui-slider::-moz-range-thumb {
+	width: clamp(22px, 4.5vw, 34px);
+	height: clamp(22px, 4.5vw, 34px);
+	border: none;
+}
+
+.ui-checkbox,
+.ui-checkbox label {
+	font-size: clamp(14px, 3.5vw, 22px);
+}
+
+.ui-checkbox input {
+	width: clamp(14px, 2vw, 18px);
+	height: clamp(14px, 2vw, 18px);
+}
+
+.ui-button {
+	font-size: clamp(14px, 3.5vw, 22px);
+	padding: clamp(6px, 1.5vw, 12px) clamp(10px, 2.5vw, 20px);
+}
+
+.ui-color {
+	width: clamp(38px, 7vw, 54px);
+	height: clamp(30px, 5vw, 42px);
+	padding: 0;
+	border: 1px solid rgba(0, 0, 0, 0.3);
+	background: transparent;
+	cursor: pointer;
+}
