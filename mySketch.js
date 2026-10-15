@@ -12,12 +12,15 @@ let bgColorPicker;
 let circleColorPicker;
 let bgLabel;
 let circleLabel;
+let rotateToggle;
+let swapBtn;
 let invertToggle;
 let cnv;
 let bgColor;
 let circleColor;
 let backgroundVisible;
 let invertGrayToSize;
+let rotateGlyphs;
 let grayMin;
 let grayMax;
 let iconImgs = [];
@@ -29,7 +32,7 @@ let pendingIcons = 0;
 // lists every `<name>_g<NNN>.png` in it (NNN = black-pixel coverage
 // %). Add a bank by creating the directory + manifest and listing it
 // in BANKS.
-const BANKS = ['dots', 'squares', 'animals'];
+const BANKS = ['dots', 'squares', 'animals', 'mixed'];
 
 function preload() {
   img_org = loadImage('Lou24.png');
@@ -101,6 +104,7 @@ function setup() {
   circleColor = color(64, 64, 64);
   backgroundVisible = false;
   invertGrayToSize = false;
+  rotateGlyphs = false;
   if (img_org) {
     img_org.loadPixels();
     computeGrayRange();
@@ -184,6 +188,25 @@ function makeGUI() {
     redraw();
   });
 
+  swapBtn = createButton('Swap');
+  swapBtn.class('ui-button');
+  swapBtn.mousePressed(() => {
+    let bgHex = bgColorPicker.value();
+    bgColorPicker.value(circleColorPicker.value());
+    circleColorPicker.value(bgHex);
+    bgColor = color(bgColorPicker.color());
+    circleColor = color(circleColorPicker.color());
+    recolorIcons();
+    redraw();
+  });
+
+  rotateToggle = createCheckbox('Rotate', false);
+  rotateToggle.class('ui-checkbox');
+  rotateToggle.changed(() => {
+    rotateGlyphs = rotateToggle.checked();
+    redraw();
+  });
+
   invertToggle = createCheckbox('Invert', false);
   invertToggle.class('ui-checkbox');
   invertToggle.changed(() => {
@@ -257,7 +280,7 @@ function draw() {
       if (size < 1) continue;
       push();
       translate(px, py);
-      rotate(PI / 4 * ((h >>> 8) % 8));
+      if (rotateGlyphs) rotate(PI / 4 * ((h >>> 8) % 8));
       image(best.colored, -size / 2, -size / 2, size, size);
       pop();
     }
@@ -304,13 +327,22 @@ function layoutGUI() {
 
   if (circleLabel && circleColorPicker) {
     let colorX = width - pad - 92;
-    let colorY = height - pad - 100;
+    let colorY = height - 162;
     circleLabel.position(colorX - 84, colorY + 6);
     circleColorPicker.position(colorX, colorY);
   }
 
+  if (swapBtn) {
+    swapBtn.size(92, 42);
+    swapBtn.position(width - pad - 92, height - 116);
+  }
+
   if (invertToggle) {
-    invertToggle.position(width - 210, height - 150);
+    invertToggle.position(width - 210, height - 198);
+  }
+
+  if (rotateToggle) {
+    rotateToggle.position(width - 210, height - 228);
   }
 }
 

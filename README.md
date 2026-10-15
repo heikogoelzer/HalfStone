@@ -13,8 +13,9 @@ shown.
 - Each glyph comes from an **icon bank**: a folder `dots/`, `squares/`,
   or `animals/` of 100×100 black PNGs (`<name>_g<NNN>.png`, NNN = the
   glyph's black-coverage %) plus an `index.json` manifest. Glyph and
-  rotation come from a per-cell hash of the cell's pixel coordinates,
-  so changing Radius % does not reshuffle the pattern.
+  rotation come from a per-cell hash of the cell's pixel coordinates
+  (rotation only applied when the Rotate checkbox is on), so changing
+  Radius % does not reshuffle the pattern.
 - Glyphs are scaled so the black area matches the target circle area
   (`spacing·√(target/g)`), and recolored pixel-by-pixel to the FG
   color (the glyphs are black-on-transparent).
@@ -34,7 +35,8 @@ shown.
 - **Radius %** — max glyph size as % of spacing (0–100, default 50).
 - **Show / Hide** — toggle the source image under the glyphs (hidden by
   default).
-- **BG / FG** — background and glyph colors.
+- **BG / FG** — background and glyph colors; **Swap** exchanges them.
+- **Rotate** — toggle random glyph rotation (off = upright, default).
 - **Invert** — flip gray-to-size mapping.
 - **Save image** — downloads the canvas as `halfstone.png` at 4× window
   resolution (`pixelDensity(4)`).
